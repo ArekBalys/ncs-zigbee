@@ -1,0 +1,73 @@
+name: 'Generate Documentation Comment'
+description: 'Generates PR comment body for documentation preview'
+
+inputs:
+  preview_url:
+    description: 'GitHub Actions run URL for artifact download'
+    required: true
+  changed_docs:
+    description: 'JSON array of changed documentation files'
+    required: true
+  build_timestamp:
+    description: 'Build timestamp'
+    required: true
+  commit_sha:
+    description: 'Short commit SHA'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate comment body
+      shell: bash
+      run: |
+        artifact_url="${{ inputs.preview_url }}"
+        changed_docs='${{ inputs.changed_docs }}'
+        build_timestamp="${{ inputs.build_timestamp }}"
+        commit_sha="${{ inputs.commit_sha }}"
+
+        cat << 'EOF' > comment.md
+        ## Documentation Preview
+
+        ✅ The documentation has been built successfully!
+
+        | Build Info | Value |
+        |------------|-------|
+        | **Generated at** | `$TIMESTAMP_PLACEHOLDER` |
+        | **Commit** | `$COMMIT_PLACEHOLDER` |
+
+        ### 📥 Download Documentation
+
+        [**View Workflow Run & Download Artifact**]($ARTIFACT_URL_PLACEHOLDER)
+
+        > Click the link above, scroll to **Artifacts**, and download the documentation archive.
+        > Extract and open `index.html` in your browser to preview.
+        EOF
+
+        # Replace placeholders with actual values
+        sed -i "s|\$ARTIFACT_URL_PLACEHOLDER|$artifact_url|g" comment.md
+        sed -i "s|\$TIMESTAMP_PLACEHOLDER|$build_timestamp|g" comment.md
+        sed -i "s|\$COMMIT_PLACEHOLDER|$commit_sha|g" comment.md
+        
+        # Add list of changed files
+        if [ "$changed_docs" != "[]" ] && [ -n "$changed_docs" ]; then
+          echo "" >> comment.md
+          echo "### Changed Files" >> comment.md
+          echo "" >> comment.md
+
+          echo "$changed_docs" | jq -r '.[]' | while read -r file; do
+            if [ -n "$file" ]; then
+              echo "- \`$file\`" >> comment.md
+            fi
+          done
+        fi
+        
+        cat << 'EOF' >> comment.md
+
+        ---
+
+        > **Note:** The full documentation will be deployed to GitHub Pages when this PR is merged to `main`.
+        EOF
+
+        echo "Comment content:"
+        cat comment.md
