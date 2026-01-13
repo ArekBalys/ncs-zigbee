@@ -35,7 +35,7 @@ It also has the following disadvantages:
 Single-chip, single protocol (SoC)
 ==================================
 
-xD
+xD xD2
 In this design, the application layer and the stack run on the same processor.
 The application uses the :ref:`zigbee_zboss` APIs directly.
 
