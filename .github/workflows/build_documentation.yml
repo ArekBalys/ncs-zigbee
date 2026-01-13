@@ -1,7 +1,7 @@
 name: Build documentation (PR validation)
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths:
@@ -12,9 +12,8 @@ on:
 # Sets permissions to allow deployment to GitHub Pages
 permissions:
   contents: write
-  pull-requests: write
   pages: write
-  id-token: write
+  pull-requests: write
 
 concurrency:
   group: "docs-preview-${{ github.event.pull_request.number }}"
@@ -30,10 +29,12 @@ jobs:
       commit_sha: ${{ steps.deploy-info.outputs.commit_sha_short }}
 
     steps:
-      - name: Checkout
+      - name: Checkout PR code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Checkout the PR head commit to build the actual PR changes
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Get changed documentation files
         id: changed-files
