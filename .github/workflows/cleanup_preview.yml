@@ -1,0 +1,62 @@
+name: Cleanup PR preview
+
+on:
+  workflow_run:
+    workflows: ["PR closed"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Download PR info artifact
+        uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
+        with:
+          workflow: post_pr.yml
+          run_id: ${{ github.event.workflow_run.id }}
+          name: pr-closed-info
+
+      - name: Read PR info
+        id: pr-info
+        run: |
+          PR_NUMBER=$(cat pr_number.txt | tr -cd '0-9')
+          PR_MERGED=$(cat pr_merged.txt)
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "pr_merged=$PR_MERGED" >> $GITHUB_OUTPUT
+          echo "PR number: $PR_NUMBER, merged: $PR_MERGED"
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@1e31de5234b9f8995739874a8ce0492dc87873e2 # v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove PR preview directory
+        run: |
+          pr_number="${{ steps.pr-info.outputs.pr_number }}"
+          preview_dir="pr-preview/pr-${pr_number}"
+
+          if [ -d "$preview_dir" ]; then
+            echo "Removing preview directory: $preview_dir"
+            rm -rf "$preview_dir"
+
+            # Check if pr-preview directory is empty and remove if so
+            if [ -d "pr-preview" ] && [ -z "$(ls -A pr-preview)" ]; then
+              rm -rf "pr-preview"
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Clean up documentation preview for PR #${pr_number}" || echo "Nothing to commit"
+            git push origin gh-pages
+            echo "Preview cleaned up successfully"
+          else
+            echo "No preview directory found for PR #${pr_number}"
+          fi
