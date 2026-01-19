@@ -1,0 +1,60 @@
+name: Cleanup PR preview
+
+on:
+  workflow_run:
+    workflows: ["PR closed"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Download PR info artifact
+        uses: dawidd6/action-download-artifact@0bd50d53a6d7fb5cb921e607957e9cc12b4ce392 # v12
+        with:
+          workflow: post_pr.yml
+          run_id: ${{ github.event.workflow_run.id }}
+          name: pr-closed-info
+
+      - name: Read PR info
+        id: pr-info
+        run: |
+          PR_NUMBER=$(cat pr_number.txt | tr -cd '0-9')
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "PR number: $PR_NUMBER"
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove PR preview directory
+        run: |
+          pr_number="${{ steps.pr-info.outputs.pr_number }}"
+          preview_dir="pr-preview/pr-${pr_number}"
+
+          if [ -d "$preview_dir" ]; then
+            echo "Removing preview directory: $preview_dir"
+            rm -rf "$preview_dir"
+
+            # Check if pr-preview directory is empty and remove if so
+            if [ -d "pr-preview" ] && [ -z "$(ls -A pr-preview)" ]; then
+              rm -rf "pr-preview"
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Clean up documentation preview for PR #${pr_number}" || echo "Nothing to commit"
+            git push origin gh-pages
+            echo "Preview cleaned up successfully"
+          else
+            echo "No preview directory found for PR #${pr_number}"
+          fi
