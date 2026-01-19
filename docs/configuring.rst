@@ -95,7 +95,7 @@ You can enable one of the following alternative options to select the channel on
 IEEE 802.15.4 EUI-64 configuration
 ==================================
 
-AAA
+AAA BBBB
 
 The Zigbee stack uses the EUI-64 address that is configured in the IEEE 802.15.4 shim layer.
 By default, it uses an address from Nordic Semiconductor's pool.

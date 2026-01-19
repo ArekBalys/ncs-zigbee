@@ -7,9 +7,6 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/build_documentation.yml'
-  push:
-    branches:
-      - main
 
 concurrency:
   group: "docs-build-${{ github.event.pull_request.number || github.ref }}"
