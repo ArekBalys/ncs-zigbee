@@ -9,6 +9,10 @@ on:
       - '.gitignore'
     branches:
       - main
+
+permissions:
+  contents: read
+
 jobs:
   Build-samples:
     runs-on: ubuntu-24.04
