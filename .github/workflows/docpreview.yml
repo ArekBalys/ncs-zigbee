@@ -1,8 +1,8 @@
-name: Publish documentation
+name: Documentation Preview
 
 on:
   workflow_run:
-    workflows: ["Build documentation"]
+    workflows: ["Build Documentation"]
     types:
       - completed
 
