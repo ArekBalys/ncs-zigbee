@@ -3,5 +3,7 @@
 Zigbee: Template
 ################
 
+XXX3
+
 .. include:: ../../../samples/template/README.rst
    :start-after: ################
