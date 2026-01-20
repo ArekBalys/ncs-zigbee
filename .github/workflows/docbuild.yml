@@ -1,4 +1,4 @@
-name: Build documentation
+name: Build Documentation
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'docs/**'
-      - '.github/workflows/build_documentation.yml'
+      - '.github/workflows/docbuild.yml'
 
 permissions:
   contents: read

@@ -1,8 +1,8 @@
-name: Publish documentation
+name: Documentation Preview
 
 on:
   workflow_run:
-    workflows: ["Build documentation"]
+    workflows: ["Build Documentation"]
     types:
       - completed
 
@@ -30,12 +30,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@1e31de5234b9f8995739874a8ce0492dc87873e2 # v4
 
-      # Try cleanup workflow first
       - name: Download site state from cleanup
         id: download-cleanup
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
-          workflow: cleanup_preview.yml
+          workflow: docremove.yml
           name: site-state
           path: _existing_pages
           workflow_conclusion: success
@@ -43,13 +42,12 @@ jobs:
           if_no_artifact_found: warn
         continue-on-error: true
 
-      # Fallback to deploy workflow if cleanup hasn't run yet
       - name: Download site state from deploy
         id: download-deploy
         if: steps.download-cleanup.outcome == 'failure'
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
-          workflow: deploy_doc_to_pages.yml
+          workflow: docpreview.yml
           name: site-state
           path: _existing_pages
           workflow_conclusion: success
@@ -60,7 +58,7 @@ jobs:
       - name: Download build artifacts
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
-          workflow: build_documentation.yml
+          workflow: docbuild.yml
           run_id: ${{ github.event.workflow_run.id }}
 
       - name: Extract version and unzip docs
@@ -119,7 +117,7 @@ jobs:
         with:
           name: site-state
           path: _site
-          retention-days: 90
+          retention-days: 14 # 2 weeks
           overwrite: true
 
       - name: Find existing comment

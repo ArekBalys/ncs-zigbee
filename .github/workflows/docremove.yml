@@ -43,7 +43,7 @@ jobs:
         id: download-deploy
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
-          workflow: deploy_doc_to_pages.yml
+          workflow: docpreview.yml
           name: site-state
           path: _site
           workflow_conclusion: success
@@ -56,7 +56,7 @@ jobs:
         if: steps.download-deploy.outcome == 'failure'
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
-          workflow: cleanup_preview.yml
+          workflow: docremove.yml
           name: site-state
           path: _site
           workflow_conclusion: success
@@ -117,5 +117,5 @@ jobs:
         with:
           name: site-state
           path: _site
-          retention-days: 90
+          retention-days: 14 # 2 weeks
           overwrite: true
