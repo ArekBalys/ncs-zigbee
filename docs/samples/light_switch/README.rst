@@ -3,5 +3,7 @@
 Zigbee: Light switch
 ####################
 
+AAAAA
+
 .. include:: ../../../samples/light_switch/README.rst
    :start-after: ####################
