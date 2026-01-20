@@ -119,6 +119,8 @@ At the end of the configuration process, you can check the EUI-64 value using :r
 ZBOSS stack start options
 =========================
 
+ssss
+
 Zigbee is initialized after Zephyr's kernel start.
 The ZBOSS stack can be started using one of the following options:
 
