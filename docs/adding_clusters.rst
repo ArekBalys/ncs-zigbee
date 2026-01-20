@@ -30,6 +30,8 @@ Read the following sections for detailed steps about how to expand the Zigbee te
 Requirements
 ************
 
+XXX
+
 To take advantage of this guide, you need to be familiar with :ref:`ug_zigbee_architectures` and :ref:`ug_zigbee_configuring`, and have built and tested at least one of the available :ref:`zigbee_samples`.
 
 To test the functionalities implemented in this user guide, you need the following hardware and software:

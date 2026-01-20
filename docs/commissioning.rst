@@ -39,6 +39,8 @@ With the |addon|, the application can use :ref:`lib_zigbee_signal_handler` to ha
 Commissioning modes
 *******************
 
+XXX
+
 Zigbee commissioning is organized into four different modes:
 
 * Touchlink commissioning (optional; not supported in the |addon| for the |NCS|)
