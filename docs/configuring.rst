@@ -80,6 +80,8 @@ After enabling the Zigbee protocol and defining the Zigbee device role, you can 
 Device operational channel
 ==========================
 
+AAAA
+
 You can enable one of the following alternative options to select the channel on which the Zigbee device can operate:
 
   * ``CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_SINGLE`` - Single mode is enabled by default.
