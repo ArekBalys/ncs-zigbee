@@ -39,6 +39,7 @@ List of known issues
 KRKNWK-21267: NCP crashes when migrating from the R22 to R23 firmware
   After migrating the ZBOSS firmware from R22 to R23, the Network Co-Processor (NCP) crashes during the migration of application datasets.
   This issue occurs only when the host application uses application‑specific datasets (:c:macro:`ZB_NVRAM_APP_DATA1` to :c:macro:`ZB_NVRAM_APP_DATA4` types).
+  dasdasdas
 
 .. rst-class:: v1-2-1 v1-2-0 v1-1-0 v1-0-0
 
