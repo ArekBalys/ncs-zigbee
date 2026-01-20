@@ -9,33 +9,82 @@ on:
       - '.gitignore'
     branches:
       - main
+
+permissions:
+  contents: read
+
+# Cancel in-progress runs when a new commit is pushed to the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   Build-samples:
     runs-on: ubuntu-24.04
     container: ghcr.io/nrfconnect/sdk-nrf-toolchain:v2.7.99
+    env:
+      CCACHE_DIR: /tmp/ccache
+      CCACHE_MAXSIZE: 2G
+      # Ignore --specs options that ccache cannot resolve
+      CCACHE_IGNOREOPTIONS: '-specs=* --specs=*'
     defaults:
       run:
         # Bash shell is needed to set toolchain related environment variables in docker container
         # It is a workaround for GitHub Actions limitation https://github.com/actions/runner/issues/1964
         shell: bash
     steps: 
+    - name: Record start time
+      run: echo "BUILD_START_TIME=$(date +%s)" >> $GITHUB_ENV
+
     - name: Checkout repository code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
         path: zigbee
+
+    - name: Restore ccache
+      uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0 # v4
+      with:
+        path: /tmp/ccache
+        key: ccache-twister-${{ github.ref_name }}-${{ github.sha }}
+        restore-keys: |
+          ccache-twister-${{ github.ref_name }}-
+          ccache-twister-main-
+          ccache-twister-
+
     - name: prepare west project
       run: |
         rm -rf .west
         west --version
         west init -l zigbee --mf west.yml &&
         west update -n -o=--depth=1 --path-cache /workdir/
+
+    - name: Set up ccache
+      run: |
+        mkdir -p ${CCACHE_DIR}
+        ccache --version || echo "ccache not found, builds will not be cached"
+        ccache -M ${CCACHE_MAXSIZE}
+        ccache -p
+        ccache -z
+
     - name: Twister build samples
+      env:
+        CMAKE_C_COMPILER_LAUNCHER: ccache
+        CMAKE_CXX_COMPILER_LAUNCHER: ccache
       run: |
         source zephyr/zephyr-env.sh
         zephyr/scripts/twister --inline-logs --build-only -N --verbose -T zigbee/samples --all -x CONFIG_ZBOSS_HALT_ON_ASSERT=y -x CONFIG_RESET_ON_FATAL_ERROR=n -x CONFIG_FACTORY_RESET_PRESS_TIME_SECONDS=2
+
     - name: Store hex files
       uses: actions/upload-artifact@v4
       with:
         name: hexes
         path: twister-out/**/*.hex
+
+    - name: Print workflow duration
+      if: always()
+      run: |
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - BUILD_START_TIME))
+        MINUTES=$((DURATION / 60))
+        SECONDS=$((DURATION % 60))
+        echo "::notice::Workflow completed in ${MINUTES}m ${SECONDS}s (${DURATION} seconds total)"
