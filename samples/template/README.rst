@@ -26,6 +26,8 @@ To test this sample, you also need to program the :ref:`Zigbee Network coordinat
 Overview
 ********
 
+TEST
+
 The Zigbee Template sample takes the Zigbee Router role and implements two clusters (Basic and Identify) that used to be required by the Zigbee Home Automation profile.
 The Basic cluster provides attributes and commands for determining basic information about the node.
 The Identify cluster allows to set the device into the identification mode, which provides a way to locate the device.

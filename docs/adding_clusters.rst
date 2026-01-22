@@ -9,6 +9,8 @@ Adding ZCL clusters to application
    :local:
    :depth: 2
 
+dddd
+
 Once you are familiar with Zigbee in the |NCS| and you have tested some of the available :ref:`zigbee_samples`, you can use the :ref:`Zigbee template <zigbee_template_sample>` sample to create your own application with a custom set of ZCL clusters.
 For example, you can create a sensor application that uses a temperature sensor with an on/off switch, with the sensor periodically updating its measured value when it is active.
 
