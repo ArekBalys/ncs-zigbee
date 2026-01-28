@@ -39,42 +39,39 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "PR number: $PR_NUMBER"
 
-      - name: Download site state from deploy
-        id: download-deploy
-        uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
-        with:
-          workflow: docpreview.yml
-          name: site-state
-          path: _site
-          workflow_conclusion: success
-          search_artifacts: true
-          if_no_artifact_found: warn
-        continue-on-error: true
-
       - name: Download site state from cleanup
         id: download-cleanup
-        if: steps.download-deploy.outcome == 'failure'
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
         with:
           workflow: docremove.yml
           name: site-state
-          path: _site
+          path: _existing_pages
           workflow_conclusion: success
           search_artifacts: true
           if_no_artifact_found: warn
         continue-on-error: true
 
-      - name: Verify site state exists
+      - name: Download site state from deploy
+        id: download-deploy
+        if: steps.download-cleanup.outcome == 'failure'
+        uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
+        with:
+          workflow: docpreview.yml
+          name: site-state
+          path: _existing_pages
+          workflow_conclusion: success
+          search_artifacts: true
+          if_no_artifact_found: warn
+        continue-on-error: true
+
+      - name: Remove symlinks from downloaded artifacts
         run: |
-          if [ ! -d "_site" ] || [ -z "$(ls -A _site 2>/dev/null)" ]; then
-            echo "Error: Could not download site-state artifact from any workflow"
-            echo "This may happen if no documentation has been deployed yet"
-            exit 1
-          fi
-          # Remove symlinks from downloaded artifacts (security)
-          find _site -type l -delete
-          echo "Site state downloaded successfully"
-          ls -la _site/
+          find _existing_pages -type l -delete 2>/dev/null || true
+
+      - name: Download and cleanup site state
+        uses: ./.github/actions/cleanup-site
+        with:
+          site_dir: _site
 
       - name: Remove PR preview directory
         id: cleanup

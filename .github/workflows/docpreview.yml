@@ -56,8 +56,16 @@ jobs:
         continue-on-error: true
 
       - name: Remove symlinks from downloaded artifacts
+        if: steps.download-cleanup.outcome == 'success' || steps.download-deploy.outcome == 'success'
         run: |
           find _existing_pages -type l -delete 2>/dev/null || true
+
+      - name: Cleanup site state
+        id: download-site-state
+        if: steps.download-cleanup.outcome == 'success' || steps.download-deploy.outcome == 'success'
+        uses: ./.github/actions/cleanup-site
+        with:
+          site_dir: _existing_pages
 
       - name: Download build artifacts
         uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11 # v6
